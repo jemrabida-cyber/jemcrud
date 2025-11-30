@@ -29,10 +29,36 @@ export class DatabaseService implements OnModuleInit {
           ssl = { ca: sslCaContent };
           console.log('Using SSL certificate from DATABASE_SSL_CA environment variable');
         } else if (sslCaPath) {
-          // Use certificate from file (for local development)
-          const ca = fs.readFileSync(path.resolve(sslCaPath), 'utf8');
-          ssl = { ca };
-          console.log(`Using SSL certificate from file: ${sslCaPath}`);
+          // Use certificate from file (try multiple possible paths)
+          const possiblePaths = [
+            path.resolve(sslCaPath),                    // Relative to current directory
+            path.resolve(process.cwd(), sslCaPath),     // Relative to project root
+            path.join(__dirname, '..', '..', sslCaPath), // Relative to dist directory
+            sslCaPath,                                  // Absolute path as-is
+          ];
+          
+          let ca: string | undefined;
+          let usedPath: string | undefined;
+          
+          for (const certPath of possiblePaths) {
+            try {
+              if (fs.existsSync(certPath)) {
+                ca = fs.readFileSync(certPath, 'utf8');
+                usedPath = certPath;
+                break;
+              }
+            } catch (err) {
+              // Try next path
+              continue;
+            }
+          }
+          
+          if (ca) {
+            ssl = { ca };
+            console.log(`Using SSL certificate from file: ${usedPath}`);
+          } else {
+            throw new Error(`Certificate file not found in any of these paths: ${possiblePaths.join(', ')}`);
+          }
         } else {
           // If CA is not provided, try default trusted CAs
           // Some providers use public CAs trusted by Node; if not, they will require a CA file.
