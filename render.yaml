@@ -2,7 +2,7 @@ services:
   - type: web
     name: jemcrud-backend
     env: node
-    buildCommand: npm install --legacy-peer-deps && npm run build
+    buildCommand: npm install --include=dev --legacy-peer-deps && npm run build
     startCommand: npm run start:prod
     envVars:
       - key: NODE_VERSION

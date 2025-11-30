@@ -15,19 +15,12 @@ Go to your service in Render and update these settings:
 
 **Build Command:**
 ```
-npm install --legacy-peer-deps && npm run build
+npm install --include=dev --legacy-peer-deps && npm run build
 ```
 
 **Start Command:**
 ```
 npm run start:prod
-```
-
-**OR** simply use:
-
-**Build Command:**
-```
-npm run render:build
 ```
 
 **Start Command:**
@@ -105,8 +98,10 @@ Make sure Node 18 or higher is being used:
 ### Option 3: Manual Configuration
 If render.yaml isn't picked up automatically:
 1. Go to Settings in Render Dashboard
-2. Manually set Build Command: `npm install --legacy-peer-deps && npm run build`
+2. Manually set Build Command: `npm install --include=dev --legacy-peer-deps && npm run build`
 3. Set Start Command: `npm run start:prod`
+
+**Important:** The `--include=dev` flag ensures devDependencies (like @nestjs/cli) are installed during build.
 
 ---
 
