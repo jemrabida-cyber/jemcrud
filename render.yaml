@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: jemcrud-backend
+    env: node
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: NPM_CONFIG_LEGACY_PEER_DEPS
+        value: true
