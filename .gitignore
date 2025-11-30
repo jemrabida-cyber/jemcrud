@@ -42,10 +42,10 @@ lerna-debug.log*
 .env.production.local
 .env.local
 
-# SSL Certificates
+# SSL Certificates (Private keys only - CA certificates are safe to commit)
 *.pem
 *.key
-*.crt
+# *.crt - Commented out to allow ca-certificate.crt (public CA cert)
 *.cer
 ca.pem
 
