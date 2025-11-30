@@ -36,7 +36,7 @@ Your backend is already configured! Just need to ensure production settings.
 
 4. **Add Environment Variables**:
    
-   Click "Advanced" → "Add Environment Variable" and add these:
+   Click "Advanced" → "Add Environment Variable" and add these **as text values**:
 
    ```
    DATABASE_HOST=mysql-ba2f967-gbox-3dee.g.aivencloud.com
@@ -51,6 +51,8 @@ Your backend is already configured! Just need to ensure production settings.
    PORT=10000
    NODE_ENV=production
    ```
+   
+   **⚠️ Important:** For `DATABASE_SSL_CA_PATH`, just enter the text `./ca-certificate.crt` (the file path). Do NOT paste the certificate content. The actual certificate file is already in your repository.
 
    **Generate strong secrets**:
    ```powershell
@@ -215,6 +217,10 @@ DATABASE_PASSWORD=<your-password>
 DATABASE_NAME=defaultdb
 DATABASE_SSL_MODE=REQUIRED
 DATABASE_SSL_CA_PATH=./ca-certificate.crt
+```
+**Note:** `DATABASE_SSL_CA_PATH` is the file path (text: `./ca-certificate.crt`), not the certificate content.
+
+```
 JWT_SECRET=<32-char-random-string>
 JWT_REFRESH_SECRET=<32-char-random-string>
 PORT=10000

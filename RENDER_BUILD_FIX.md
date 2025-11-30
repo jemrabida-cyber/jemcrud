@@ -37,7 +37,9 @@ npm run start:prod
 
 ### Step 2: Environment Variables in Render
 
-Make sure you have these set in your Render service:
+Make sure you have these set in your Render service (Settings → Environment):
+
+**⚠️ IMPORTANT:** Enter these as TEXT values in Render's environment variable fields:
 
 ```
 DATABASE_HOST=mysql-ba2f967-gbox-3dee.g.aivencloud.com
@@ -47,6 +49,10 @@ DATABASE_PASSWORD=<your-aiven-password>
 DATABASE_NAME=defaultdb
 DATABASE_SSL_MODE=REQUIRED
 DATABASE_SSL_CA_PATH=./ca-certificate.crt
+```
+☝️ **Note:** `DATABASE_SSL_CA_PATH` is just the text `./ca-certificate.crt` (the file path), NOT the certificate content. The actual `ca-certificate.crt` file is already in your GitHub repository, so Render will use it automatically.
+
+```
 JWT_SECRET=40aa43a4f39957f4c499fc159f1a819f04a5b42a9aaecd361a6620edd113e5aa
 JWT_REFRESH_SECRET=80dd3ec92f534a15836ad604f9855930c84fe9b4a56f02846132b56eab092b01
 PORT=10000
