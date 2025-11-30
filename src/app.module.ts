@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { PositionsModule } from './positions/positions.module';
 import { DatabaseModule } from './database/database.module';
+import { AppController } from './app.controller';
 import jwt from './config/jwt';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -28,5 +29,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     PositionsModule,
     DatabaseModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

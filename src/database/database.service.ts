@@ -58,6 +58,7 @@ export class DatabaseService implements OnModuleInit {
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
+      connectTimeout: 60000, // 60 seconds for cloud DB
       // Only include ssl property when defined; mysql2 treats undefined as no-ssl
       ...(ssl ? { ssl } : {}),
     });
@@ -65,6 +66,7 @@ export class DatabaseService implements OnModuleInit {
 
   async onModuleInit() {
     await this.testConnection();
+    await this.initializeTables();
   }
 
   private async testConnection() {
@@ -76,6 +78,44 @@ export class DatabaseService implements OnModuleInit {
     } catch (error: any) {
       console.error('Database connection failed:', error);
       throw new Error(`message: ${error.message}`);
+    }
+  }
+
+  private async initializeTables() {
+    try {
+      // Create users table
+      await this.pool.execute(`
+        CREATE TABLE IF NOT EXISTS users (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          username VARCHAR(255) NOT NULL UNIQUE,
+          email VARCHAR(255),
+          password VARCHAR(255) NOT NULL,
+          firstName VARCHAR(255),
+          lastName VARCHAR(255),
+          createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+      `);
+
+      // Create positions table
+      await this.pool.execute(`
+        CREATE TABLE IF NOT EXISTS positions (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          positionCode VARCHAR(50) NOT NULL,
+          positionName VARCHAR(255) NOT NULL,
+          createdBy INT,
+          updatedBy INT,
+          createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          FOREIGN KEY (createdBy) REFERENCES users(id) ON DELETE SET NULL,
+          FOREIGN KEY (updatedBy) REFERENCES users(id) ON DELETE SET NULL
+        )
+      `);
+
+      console.log('Database tables initialized successfully');
+    } catch (error: any) {
+      console.error('Failed to initialize tables:', error.message);
+      // Don't throw error here, let the app continue
     }
   }
 

@@ -39,49 +39,93 @@ export class AuthService {
     console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'MISSING');
     console.log('JWT_REFRESH_SECRET:', process.env.JWT_REFRESH_SECRET ? 'Set' : 'MISSING');
 
+    const accessSecret = process.env.JWT_SECRET || 'dev-secret';
+    const accessExpiresIn = process.env.JWT_EXPIRES_IN || '1h';
+    const refreshSecret = process.env.JWT_REFRESH_SECRET || accessSecret;
+    const refreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+
     const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET,
-      expiresIn: process.env.JWT_EXPIRES_IN,
+      secret: accessSecret,
+      expiresIn: accessExpiresIn,
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+      secret: refreshSecret,
+      expiresIn: refreshExpiresIn,
     });
 
     // Skip refreshToken DB update since the column doesn't exist in your schema
     // If you need refresh token persistence, add the column to your users table
     
     console.log('Login successful, returning tokens');
-    const response = { accessToken, refreshToken };
+    const response = {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email ?? undefined,
+      },
+    };
     console.log('Response object:', JSON.stringify(response).substring(0, 100));
     return response;
   }
 
   async signup(username: string, password: string, email?: string) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(username, password);
-    
-    // Support optional email column
-    if (email) {
-      await this.db
-        .getPool()
-        .execute(
-          `INSERT INTO ${this.usersTable} (username, password, email) VALUES(?, ?, ?)`,
-          [username, hashedPassword, email],
-        );
-    } else {
-      await this.db
-        .getPool()
-        .execute(
-          `INSERT INTO ${this.usersTable} (username, password) VALUES(?, ?)`,
-          [username, hashedPassword],
-        );
+    // Validate inputs
+    if (!username || !password) {
+      throw new BadRequestException('Username and password are required');
     }
 
+    // Check if username already exists (users.username is UNIQUE)
+    const [existingRows] = (await this.db
+      .getPool()
+      .execute(`SELECT id FROM ${this.usersTable} WHERE username = ?`, [
+        username,
+      ])) as any[];
+
+    if (existingRows.length > 0) {
+      throw new BadRequestException('Username already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert user
+    const [result] = await this.db
+      .getPool()
+      .execute(
+        email
+          ? `INSERT INTO ${this.usersTable} (username, password, email) VALUES(?, ?, ?)`
+          : `INSERT INTO ${this.usersTable} (username, password) VALUES(?, ?)`,
+        email ? [username, hashedPassword, email] : [username, hashedPassword],
+      );
+
+    const insertId = (result as any).insertId as number;
+
+    // Issue tokens so the client can be logged in immediately
+    const payload = { userId: insertId, username };
+    const accessSecret = process.env.JWT_SECRET || 'dev-secret';
+    const accessExpiresIn = process.env.JWT_EXPIRES_IN || '1h';
+    const refreshSecret = process.env.JWT_REFRESH_SECRET || accessSecret;
+    const refreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+
+    const accessToken = this.jwtService.sign(payload, {
+      secret: accessSecret,
+      expiresIn: accessExpiresIn,
+    });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: refreshSecret,
+      expiresIn: refreshExpiresIn,
+    });
+
     return {
-      message: 'Succesfuly created',
-      data: { username, email, hashedPassword },
+      accessToken,
+      refreshToken,
+      user: {
+        id: insertId,
+        username,
+        email: email ?? undefined,
+      },
     };
   }
 

@@ -8,7 +8,7 @@ export class PositionsService {
     return process.env.POSITIONS_TABLE || 'positions';
   }
   async create(position_code: string, position_name: string, userId: number) {
-    // Table uses snake_case columns: position_code, position_name (no userId column)
+    // Table uses snake_case columns: position_code, position_name
     await this.db
       .getPool()
       .execute(
@@ -46,7 +46,7 @@ export class PositionsService {
     position_name: string,
     userId: number,
   ) {
-    // Table uses snake_case, no userId column
+    // Table uses snake_case columns and position_id as primary key
     const [result] = await this.db
       .getPool()
       .execute(

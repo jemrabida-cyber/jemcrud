@@ -19,8 +19,8 @@ export class PositionsController {
 
   @Post()
   create(
-    @Body('positionCode') positionCode: string,
-    @Body('positionName') positionName: string,
+    @Body('position_code') positionCode: string,
+    @Body('position_name') positionName: string,
     @Req() req: any,
   ) {
     return this.positionsService.create(positionCode, positionName, req.userId);
@@ -39,8 +39,8 @@ export class PositionsController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body('positionCode') positionCode: string,
-    @Body('positionName') positionName: string,
+    @Body('position_code') positionCode: string,
+    @Body('position_name') positionName: string,
     @Req() req: any,
   ) {
     return this.positionsService.update(
